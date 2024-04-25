@@ -40,4 +40,11 @@ const insert = (data) =>{
     connect.query(query,values,insertCallback);
 }
 
-module.exports = {insert, fetch, rootFetch};
+const deletion = (username) =>{
+    const query = `DELETE FROM usertable WHERE username = '${username}'`;
+    connect.query(query,()=>{
+        console.log(`Data dari ${username} berhasil dihapus`);
+    })
+}
+
+module.exports = {insert, fetch, rootFetch, deletion};
