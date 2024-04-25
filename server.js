@@ -3,8 +3,10 @@ const app = express();
 const {insert, fetch, rootFetch, deletion,update} = require('./db/db.js')
 const {userSchema, updateUserSchema} = require('./validation/schema.js');
 const validate = require('./validation/validation.js');
-
+require('dotenv').config
 app.use(express.json());
+
+
 app.get('/', (req, res)=>{
     fetch(res);
 });
@@ -33,7 +35,7 @@ app.put('/update', (req,res)=>{
     update(username,data);
     const get = rootFetch(username,res)
 })
-app.listen(3000, ()=>{
+app.listen(process.env.PORT, ()=>{
     console.log("run at port 3000")
 })
 
