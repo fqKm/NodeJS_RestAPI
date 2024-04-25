@@ -36,6 +36,6 @@ app.put('/update', (req,res)=>{
     const get = rootFetch(username,res)
 })
 app.listen(process.env.PORT, ()=>{
-    console.log("run at port 3000")
+    console.log(`listen at port ${process.env.PORT}`)
 })
 
