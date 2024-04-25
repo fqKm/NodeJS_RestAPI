@@ -36,7 +36,7 @@ const rootFetch = (username,res) => {
 
 const insert = (data) =>{
     const query = `INSERT INTO usertable (username, postalCode, street, city, country) VALUES (?, ?, ?, ?, ?)`;
-    const values = [`${data.username}`, data.postalCode, `${data.address.street}`, `${data.address.city}`, `${data.address.country}` ];
+    const values = [`${data.username}`, `${data.postalCode}`, `${data.address.street}`, `${data.address.city}`, `${data.address.country}` ];
     connect.query(query,values,insertCallback);
 }
 
@@ -47,4 +47,38 @@ const deletion = (username) =>{
     })
 }
 
-module.exports = {insert, fetch, rootFetch, deletion};
+const update = (username, data) => {
+    let query = `UPDATE usertable SET `;
+    const updateFields = [];
+
+    if (data.username) {
+        updateFields.push(`name = '${data.username}'`);
+    }
+    if (data.postalCode) {
+        updateFields.push(`postalCode = '${data.postalCode}'`);
+    }
+    if (data.address) {
+        if (data.address.street) {
+            updateFields.push(`street = '${data.address.street}'`);
+        }
+        if (data.address.city) {
+            updateFields.push(`city = '${data.address.city}'`);
+        }
+        if (data.address.country) {
+            updateFields.push(`country = '${data.address.country}'`);
+        }
+    }
+
+    query += updateFields.join(', ');
+    query += ` WHERE username = '${username}'`;
+
+    connect.query(query, (error, results) => {
+        if (error) {
+            console.error(`Error updating data for ${username}:`, error);
+        } else {
+            console.log(`Data for ${username} successfully updated`);
+        }
+    });
+};
+
+module.exports = {insert, fetch, rootFetch, deletion, update};
