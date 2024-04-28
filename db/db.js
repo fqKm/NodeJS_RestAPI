@@ -95,7 +95,7 @@ const update = (username, data) => {
 
     connect.query(query, (err, results) => {
         if (err) {
-            console.error(`Error updating data for ${username}:`, errr);
+            console.error(`Error updating data for ${username}:`, err);
         } else {
             console.log(`Data for ${username} successfully updated`);
         }
