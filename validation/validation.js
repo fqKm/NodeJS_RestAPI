@@ -2,13 +2,14 @@
 const joi = require('joi')
 
 
-const validate = (schema, req) =>{
+const validate = (schema, req, res) =>{
     const result = schema.validate(req,{
         abortEarly: false,
         allowUnknown: false
     })
     if(result.error){
-        return console.error(result.error.details.map(detail => detail.message));
+        console.error(result.error.details.map(detail => detail.message));
+        return res.sendStatus(400)
     } else{
         return result.value;
     }

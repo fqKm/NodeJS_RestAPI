@@ -1,6 +1,8 @@
 const mysql = require('mysql')
 require('dotenv').config()
+const NodeCache = require('node-cache')
 const response = require('../utils/payload')
+const cache = new NodeCache({stdTTL : 10})
 
 const connect = mysql.createConnection({
     host : process.env.DB_IP,
@@ -10,39 +12,58 @@ const connect = mysql.createConnection({
     database : process.env.DB_DATABASE,
 });
 
-const insertCallback = () =>{
-    console.log('data berhasil diinputkan');
-}
 
-const fetch = (res) => {
-    const query = `SELECT * FROM usertable`
-    datas = connect.query(query,(err, result)=> {
-            if (err){
-                console.error("Error Internal" + err.sqlMessage)
-                res.status(500).send('Internal Server Error')
-            }
-            response(200,"Berhasil Load Data dari Database", result, res)})
-}
+const fetchDataFromDatabase = (query, res) => {
+    connect.query(query, (err, result) => {
+        if (err) {
+            console.error('Error fetching data:', err);
+            res.status(500).send('Internal Server Error');
+        } else {
+            response(200, 'Successfully loaded data from database', result, res);
+            cache.set(query, result);
+        }
+    });
+};
+const fetch = (res,limit,offset) => {
+    const query = `SELECT * FROM usertable LIMIT ${limit} OFFSET ${offset}`
+    const cachedData = cache.get(query);
+    if (cachedData) {
+        console.log('Data loaded from cache');
+        response(200, 'Successfully loaded data from cache', cachedData, res);
+    } else {
+        console.log('Fetching data from database');
+        fetchDataFromDatabase(query, res);};};
 
 const rootFetch = (username,res) => {
     const query = `SELECT * FROM usertable WHERE username = '${username}' `
-    datas = connect.query(query,(err, result)=> {
-            if (err){
-                console.error("Error Internal" + err.sqlMessage)
-                res.status(500).send('Internal Server Error')
-            }
-            response(200,"Berhasil Load Data dari Database", result, res)})
+    const cachedData = cache.get(query);
+    if (cachedData) {
+        console.log('Data loaded from cache');
+        response(200, 'Successfully loaded data from cache', cachedData, res);
+    } else {
+        console.log('Fetching data from database');
+        fetchDataFromDatabase(query, res);
+    };
 }
 
 const insert = (data) =>{
     const query = `INSERT INTO usertable (username, postalCode, street, city, country) VALUES (?, ?, ?, ?, ?)`;
     const values = [`${data.username}`, `${data.postalCode}`, `${data.address.street}`, `${data.address.city}`, `${data.address.country}` ];
-    connect.query(query,values,insertCallback);
+    connect.query(query,values,(err)=>{
+        if (err){
+            console.err("Error Inserting Data :", err);
+        } else {
+            console.log("Data Successfully Inserted")
+        }
+    });
 }
 
 const deletion = (username) =>{
     const query = `DELETE FROM usertable WHERE username = '${username}'`;
-    connect.query(query,()=>{
+    connect.query(query,(err)=>{
+        if (err) {
+            console.err("Error Deleting Data :", err)
+        }
         console.log(`Data dari ${username} berhasil dihapus`);
     })
 }
@@ -72,9 +93,9 @@ const update = (username, data) => {
     query += updateFields.join(', ');
     query += ` WHERE username = '${username}'`;
 
-    connect.query(query, (error, results) => {
-        if (error) {
-            console.error(`Error updating data for ${username}:`, error);
+    connect.query(query, (err, results) => {
+        if (err) {
+            console.error(`Error updating data for ${username}:`, errr);
         } else {
             console.log(`Data for ${username} successfully updated`);
         }

@@ -7,35 +7,37 @@ require('dotenv').config
 app.use(express.json());
 
 
-app.get('/', (req, res)=>{
-    fetch(res);
+app.get('/all/:limit?/:offset?', (req, res)=>{
+    const offset = req.params.offset || 0;
+    const limit = req.params.limit || 10;
+    fetch(res,limit,offset)
 });
 
 app.post('/', (req,res)=>{
-    const result = validate(userSchema, req.body)
+    const result = validate(userSchema, req.body, res)
     insert(result)
     res.send(result)
 })
 
-app.get('/find', (req, res)=>{
-   const username = `${req.query.username}`
+app.get('/find/:username?', (req, res)=>{
+    const username = req.params.username
     rootFetch(username,res)
     console.log(username)
 })
 
-app.delete('/delete',(req,res)=>{
-    const username = `${req.query.username}`
+app.delete('/delete/:username',(req,res)=>{
+    const username = req.params.username
     deletion(username)
     res.status(200)
 })
 
-app.put('/update', (req,res)=>{
-    const username = `${req.query.username}`
-    const data = validate(updateUserSchema,req.body);
+app.put('/update/:username', (req,res)=>{
+    const username = req.params.username
+    const data = validate(updateUserSchema,req.body,res);
     update(username,data);
     const get = rootFetch(username,res)
 })
 app.listen(process.env.PORT, ()=>{
-    console.log("run at port 3000")
+    console.log(`run at port ${process.env.PORT}`)
 })
 

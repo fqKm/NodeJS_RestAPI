@@ -6,5 +6,4 @@ const response = (statuscode, massage, data, res) => {
     })
 }
 
-
 module.exports = response;
